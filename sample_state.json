@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-08T22:30:00+08:00",
+  "ok": true,
+  "errors": [],
+  "limits": [
+    {
+      "label": "本次 session",
+      "percent": 23,
+      "severity": "normal",
+      "resets_at": "2026-09-09T02:40:00+08:00",
+      "resets_in_text": "4 小時 10 分後"
+    },
+    {
+      "label": "本週全部模型",
+      "percent": 34,
+      "severity": "normal",
+      "resets_at": "2026-09-11T01:00:00+08:00",
+      "resets_in_text": "2 天 2 小時後"
+    },
+    {
+      "label": "Fable",
+      "percent": 67,
+      "severity": "warning",
+      "resets_at": "2026-09-11T01:00:00+08:00",
+      "resets_in_text": "2 天 2 小時後"
+    }
+  ],
+  "cost": {
+    "today_usd": 12.45,
+    "week_usd": 78.90,
+    "pricing_version": "2026-09-08"
+  },
+  "projects": [
+    {
+      "name": "project-alpha",
+      "tokens": 1234567,
+      "percent": 42.1
+    },
+    {
+      "name": "linux_claude_usage",
+      "tokens": 890123,
+      "percent": 30.3
+    },
+    {
+      "name": "other-project",
+      "tokens": 456789,
+      "percent": 15.6
+    },
+    {
+      "name": "demo",
+      "tokens": 234567,
+      "percent": 8.0
+    },
+    {
+      "name": "test",
+      "tokens": 116789,
+      "percent": 4.0
+    }
+  ],
+  "totals": {
+    "today_tokens": 2932835,
+    "today_by_model": {
+      "claude-opus-5": 1500000,
+      "claude-sonnet-5": 1432835
+    }
+  }
+}

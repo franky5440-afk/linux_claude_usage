@@ -1,0 +1,10 @@
+{
+  "uuid": "claude-usage@lintzuyang",
+  "name": "Claude 用量監控",
+  "description": "在 Cinnamon 桌面顯示 Claude API 用量、成本估算與專案排行",
+  "version": 1,
+  "author": "lintzuyang",
+  "license": "Apache-2.0",
+  "cinnamon-version": ["6.6"],
+  "settings-schema": "settings-schema.json"
+}

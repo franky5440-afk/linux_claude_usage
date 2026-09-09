@@ -1,0 +1,30 @@
+{
+  "update-interval": {
+    "type": "spinbutton",
+    "default": 30,
+    "min": 10,
+    "max": 300,
+    "step": 5,
+    "unit": "秒",
+    "description": "更新間隔"
+  },
+  "show-cost": {
+    "type": "switch",
+    "default": true,
+    "description": "顯示成本估算"
+  },
+  "show-projects": {
+    "type": "switch",
+    "default": true,
+    "description": "顯示專案排行"
+  },
+  "width": {
+    "type": "spinbutton",
+    "default": 320,
+    "min": 240,
+    "max": 600,
+    "step": 20,
+    "unit": "像素",
+    "description": "Desklet 寬度"
+  }
+}

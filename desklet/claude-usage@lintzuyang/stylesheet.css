@@ -1,0 +1,126 @@
+/* Claude 用量監控 Desklet 樣式表 */
+
+.claude-usage-root {
+    padding: 10px;
+    spacing-rows: 8px;
+    /* 使用主題色，不寫死背景色 */
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.claude-usage-section {
+    spacing-rows: 4px;
+}
+
+.claude-usage-limits-container {
+    spacing: 6px;
+}
+
+.claude-usage-section-title {
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+.claude-usage-limit-row {
+    spacing-rows: 2px;
+}
+
+.claude-usage-limit-header {
+    spacing-columns: 8px;
+}
+
+.claude-usage-limit-label {
+    font-size: 10pt;
+}
+
+.claude-usage-limit-percent {
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: right;
+}
+
+.claude-usage-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.claude-usage-progress-fill {
+    /* St 的 CSS 不支援百分比高度（會算成 0，橫條有寬度但沒厚度就看不見），
+       所以這裡寫死像素，需與 .claude-usage-progress-bar 的 height 一致 */
+    height: 8px;
+    border-radius: 4px;
+    background-color: #5294e2;  /* St 不支援 @theme_* 變數，需寫明確色值 */
+}
+
+.claude-usage-progress-fill.warning {
+    background-color: #f0ad4e;
+}
+
+.claude-usage-progress-fill.critical {
+    background-color: #d9534f;
+}
+
+.claude-usage-limit-reset {
+    font-size: 8pt;
+    opacity: 0.7;
+}
+
+.claude-usage-cost-row {
+    spacing-columns: 12px;
+}
+
+.claude-usage-cost-label {
+    font-size: 10pt;
+}
+
+.claude-usage-cost-value {
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: right;
+}
+
+.claude-usage-cost-note {
+    font-size: 8pt;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.claude-usage-project-row {
+    spacing-columns: 8px;
+}
+
+.claude-usage-project-name {
+    font-size: 10pt;
+}
+
+.claude-usage-project-tokens {
+    font-size: 10pt;
+    text-align: right;
+}
+
+.claude-usage-project-percent {
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: right;
+    min-width: 45px;
+}
+
+.claude-usage-error {
+    font-size: 9pt;
+    color: #d9534f;
+    padding: 4px;
+}
+
+.claude-usage-no-data {
+    font-size: 10pt;
+    opacity: 0.6;
+    text-align: center;
+    padding: 16px;
+}
+
+.claude-usage-updated {
+    font-size: 8pt;
+    opacity: 0.5;
+    text-align: right;
+}

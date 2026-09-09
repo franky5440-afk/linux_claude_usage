@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.credentials*
+.env
+state.json
+.venv/
+
+# 內部工作文件（此 repo 未來會公開，這幾份只給本機的 agent 看）
+CLAUDE.md
+AGENTS.md
+HANDOFF.md
+LESSONS.md
+
+# 公開前才要跑的一次性腳本，不需要進 repo
+squash-history.sh
