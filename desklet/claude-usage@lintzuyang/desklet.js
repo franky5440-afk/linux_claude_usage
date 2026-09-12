@@ -367,6 +367,19 @@ function createProjectsSection(projects, showProjects) {
 }
 
 /**
+ * Context window 簡寫（D 區塊百分比欄的分母用）。
+ * 不要用 formatTokens()，它會給 1.00M，多出來的小數點在這裡是噪音。
+ * @param {number} contextWindow
+ * @returns {string}
+ */
+function formatContextWindow(contextWindow) {
+    if (contextWindow >= 1000000) {
+        return (contextWindow / 1000000) + "M";
+    }
+    return (contextWindow / 1000) + "K";
+}
+
+/**
  * 建立 Session Context 區塊（SPEC §10）
  * 結構完全比照 createProjectsSection：同樣的 null 早退、
  * 同樣的 St.BoxLayout + St.Label、同樣的三欄（專案短名 / token 數 / 百分比）。
@@ -412,12 +425,14 @@ function createSessionsSection(sessions, showSessions) {
             x_align: St.Align.END,
         });
 
-        // context_window / percent 為 null 時只顯示 token 數，百分比欄顯示 —。
+        // context_window / percent 為 null 時只顯示 token 數，百分比欄顯示 —
+        //（後面不准接 of ...，否則會變成「— of null」）。
         // 絕對不准在這裡補分母（例如沒有就當 200000），理由見 SPEC §10.1。
         let percent = new St.Label({
             style_class: "claude-usage-session-percent",
             text: (session.percent !== null && session.percent !== undefined)
-                ? session.percent.toFixed(1) + "%"
+                ? session.percent.toFixed(1) + "% of "
+                    + formatContextWindow(session.context_window)
                 : "—",
             x_align: St.Align.END,
         });
