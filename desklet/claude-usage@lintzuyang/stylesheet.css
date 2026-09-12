@@ -106,6 +106,26 @@
     min-width: 45px;
 }
 
+.claude-usage-session-row {
+    spacing-columns: 8px;
+}
+
+.claude-usage-session-name {
+    font-size: 10pt;
+}
+
+.claude-usage-session-tokens {
+    font-size: 10pt;
+    text-align: right;
+}
+
+.claude-usage-session-percent {
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: right;
+    min-width: 45px;
+}
+
 .claude-usage-error {
     font-size: 9pt;
     color: #d9534f;

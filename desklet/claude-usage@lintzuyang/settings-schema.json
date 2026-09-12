@@ -18,6 +18,11 @@
     "default": true,
     "description": "顯示專案排行"
   },
+  "show-sessions": {
+    "type": "switch",
+    "default": true,
+    "description": "顯示 Session Context"
+  },
   "width": {
     "type": "spinbutton",
     "default": 320,

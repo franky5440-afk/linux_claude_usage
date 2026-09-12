@@ -367,6 +367,71 @@ function createProjectsSection(projects, showProjects) {
 }
 
 /**
+ * 建立 Session Context 區塊（SPEC §10）
+ * 結構完全比照 createProjectsSection：同樣的 null 早退、
+ * 同樣的 St.BoxLayout + St.Label、同樣的三欄（專案短名 / token 數 / 百分比）。
+ * @param {Array} sessions - session 陣列
+ * @param {boolean} showSessions - 是否顯示 session
+ * @returns {St.BoxLayout|null}
+ */
+function createSessionsSection(sessions, showSessions) {
+    if (!showSessions || !sessions || sessions.length === 0) {
+        return null;
+    }
+
+    let section = new St.BoxLayout({
+        style_class: "claude-usage-section",
+        vertical: true,
+        x_expand: true,
+    });
+
+    let title = new St.Label({
+        style_class: "claude-usage-section-title",
+        text: "Session Context",
+    });
+
+    section.add_child(title);
+
+    for (let i = 0; i < sessions.length; i++) {
+        let session = sessions[i];
+        let row = new St.BoxLayout({
+            style_class: "claude-usage-session-row",
+            x_expand: true,
+        });
+
+        let name = new St.Label({
+            style_class: "claude-usage-session-name",
+            text: session.project || "未知專案",
+            x_align: St.Align.START,
+            x_expand: true,
+        });
+
+        let tokens = new St.Label({
+            style_class: "claude-usage-session-tokens",
+            text: formatTokens(session.tokens || 0),
+            x_align: St.Align.END,
+        });
+
+        // context_window / percent 為 null 時只顯示 token 數，百分比欄顯示 —。
+        // 絕對不准在這裡補分母（例如沒有就當 200000），理由見 SPEC §10.1。
+        let percent = new St.Label({
+            style_class: "claude-usage-session-percent",
+            text: (session.percent !== null && session.percent !== undefined)
+                ? session.percent.toFixed(1) + "%"
+                : "—",
+            x_align: St.Align.END,
+        });
+
+        row.add_child(name);
+        row.add_child(tokens);
+        row.add_child(percent);
+        section.add_child(row);
+    }
+
+    return section;
+}
+
+/**
  * 建立錯誤訊息區塊
  * @param {Array} errors - 錯誤訊息陣列
  * @returns {St.BoxLayout|null}
@@ -468,6 +533,12 @@ ClaudeUsageDesklet.prototype = {
         );
         this.settings.bindProperty(
             Settings.BindingDirection.IN,
+            "show-sessions",
+            "showSessions",
+            this._onSettingsChanged.bind(this)
+        );
+        this.settings.bindProperty(
+            Settings.BindingDirection.IN,
             "width",
             "deskletWidth",
             this._onSettingsChanged.bind(this)
@@ -554,6 +625,12 @@ ClaudeUsageDesklet.prototype = {
             x_expand: true,
         });
 
+        // Sessions 區塊（D 區塊，掛在 projects 後面、error 前面）
+        this.sessionsContainer = new St.BoxLayout({
+            vertical: true,
+            x_expand: true,
+        });
+
         // Error 區塊
         this.errorContainer = new St.BoxLayout({
             vertical: true,
@@ -572,6 +649,7 @@ ClaudeUsageDesklet.prototype = {
         this.mainContainer.add_child(this.limitsSection);
         this.mainContainer.add_child(this.costContainer);
         this.mainContainer.add_child(this.projectsContainer);
+        this.mainContainer.add_child(this.sessionsContainer);
         this.mainContainer.add_child(this.errorContainer);
         this.mainContainer.add_child(this.timestampLabel);
 
@@ -700,6 +778,9 @@ ClaudeUsageDesklet.prototype = {
         // 更新 Projects
         this._updateProjects(state.projects || []);
 
+        // 更新 Sessions（D 區塊）
+        this._updateSessions(state.sessions || []);
+
         // 更新 Errors
         this._updateErrors(state.errors || []);
 
@@ -712,6 +793,7 @@ ClaudeUsageDesklet.prototype = {
         this._clearContainer(this.limitsContainer);
         this._clearContainer(this.costContainer);
         this._clearContainer(this.projectsContainer);
+        this._clearContainer(this.sessionsContainer);
         this._clearContainer(this.errorContainer);
 
         // 顯示無資料訊息
@@ -763,6 +845,15 @@ ClaudeUsageDesklet.prototype = {
         let section = createProjectsSection(projects, this.showProjects);
         if (section) {
             this.projectsContainer.add_child(section);
+        }
+    },
+
+    _updateSessions: function(sessions) {
+        this._clearContainer(this.sessionsContainer);
+
+        let section = createSessionsSection(sessions, this.showSessions);
+        if (section) {
+            this.sessionsContainer.add_child(section);
         }
     },
 
