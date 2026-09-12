@@ -2,7 +2,7 @@
 
 [繁體中文](README.md)
 
-A Cinnamon desklet that keeps your [Claude Code](https://claude.com/claude-code) usage on your Linux desktop: quota bars, cost estimates, a per-project token breakdown, and a clickable weekly history report. No browser tab, no CLI command — it's just there.
+A Cinnamon desklet that keeps your [Claude Code](https://claude.com/claude-code) usage on your Linux desktop: quota bars, cost estimates, a per-project token breakdown, how much context each live conversation is using, and a clickable weekly history report. No browser tab, no CLI command — it's just there.
 
 ![license](https://img.shields.io/badge/license-Apache%202.0-blue)
 
@@ -11,6 +11,7 @@ A Cinnamon desklet that keeps your [Claude Code](https://claude.com/claude-code)
 - **Quota usage**: 5-hour session limit, weekly limit, and per-model weekly limits, each with a progress bar and a "resets in X hours" countdown
 - **Cost estimate**: today's and this week's spend in USD, broken down by model (estimate only — actual billing follows your Claude subscription plan, not this number)
 - **Project ranking**: today's top 5 projects by token usage
+- **Session context**: how much context each in-progress conversation is currently holding, and what share of the context window that is (e.g. `13.5% of 1M`). Shows conversations active in the last 5 minutes, up to 3 of them
 - **Weekly history report**: click the desklet to open a locally generated HTML report, tokens and cost rolled up by week
 
 ## Requirements
@@ -55,7 +56,7 @@ After installing:
    * * * * * cd ~/Claude/linux_claude_usage && .venv/bin/python -m collector.main
    ```
 
-4. Right-click the desklet on your desktop → Configure, to adjust the update interval, toggle the cost/project sections, or change the width
+4. Right-click the desklet on your desktop → Configure, to adjust the update interval, toggle the cost/project/session sections, or change the width
 
 ## Architecture
 
@@ -65,6 +66,21 @@ Two layers connected by a single JSON file:
 - **desklet** (GJS / Cinnamon): reads `state.json` and renders the UI — it never touches credentials or transcripts directly
 
 Full spec in [SPEC.md](SPEC.md).
+
+### Quota percentage vs. session context percentage
+
+These two numbers look alike but mean **entirely different things**:
+
+| | Quota usage | Session context |
+|---|---|---|
+| What it measures | How much of your allowance the billing window has consumed | How much of the context window this conversation currently holds |
+| When it drops | Automatically, when the window resets | After the conversation is compacted |
+| Where it comes from | Usage API | The `usage` field of the last assistant message in the transcript |
+
+Context usage is `input_tokens + cache_read_input_tokens + cache_creation_input_tokens`
+from that last message. The denominator comes from the model id recorded in the transcript
+(`[1m]` means 1,000,000, otherwise 200,000). **When it can't be determined, only the token
+count is shown and the percentage is left blank** — no guessed denominator.
 
 ## Security
 

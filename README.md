@@ -2,7 +2,7 @@
 
 [English](README.en.md)
 
-在 Linux Cinnamon 桌面上常駐顯示 [Claude Code](https://claude.com/claude-code) 用量的 desklet（小工具）：額度使用率、成本估算、各專案 token 排行，外加可點開的歷史週報。不用開瀏覽器、不用打指令，桌面上隨時看得到。
+在 Linux Cinnamon 桌面上常駐顯示 [Claude Code](https://claude.com/claude-code) 用量的 desklet（小工具）：額度使用率、成本估算、各專案 token 排行、每個對話當下的 context 佔用，外加可點開的歷史週報。不用開瀏覽器、不用打指令，桌面上隨時看得到。
 
 ![license](https://img.shields.io/badge/license-Apache%202.0-blue)
 
@@ -11,6 +11,7 @@
 - **額度使用率**：5 小時 session 限額、每週總限額、分模型週限額，各自有進度條與「幾小時後重置」倒數
 - **成本估算**：今日 / 本週花費的美金估算，附分模型明細（僅供參考，Max 訂閱制不會照這個金額收費）
 - **專案排行**：今日 token 用量 Top 5 專案
+- **Session Context**：目前還在進行中的對話各自用掉多少 context，以及佔 context 視窗的比例（例 `13.5% of 1M`）。顯示最近 5 分鐘內有活動的對話，最多 3 個
 - **歷史週報**：點一下 desklet 用瀏覽器開啟本機產生的 HTML 週報，按週彙總 token 與金額
 
 ## 環境需求
@@ -54,7 +55,7 @@ python3 -m venv .venv
    * * * * * cd ~/Claude/linux_claude_usage && .venv/bin/python -m collector.main
    ```
 
-4. 右鍵點桌面上的 desklet → 設定，可調整更新間隔、要不要顯示成本 / 專案排行、寬度
+4. 右鍵點桌面上的 desklet → 設定，可調整更新間隔、要不要顯示成本 / 專案排行 / Session Context、寬度
 
 ## 架構
 
@@ -64,6 +65,20 @@ python3 -m venv .venv
 - **desklet**（GJS / Cinnamon）：讀 `state.json` 畫出畫面，不直接碰任何憑證或逐字稿
 
 完整規格見 [SPEC.md](SPEC.md)。
+
+### 額度百分比 vs. Session Context 百分比
+
+這兩個數字長得像，但**意義完全不同**，別搞混：
+
+| | 額度使用率 | Session Context |
+|---|---|---|
+| 代表什麼 | 計費窗口用掉多少配額 | 這個對話目前佔掉多少 context 視窗 |
+| 什麼時候歸零 | 時間到了自動重置 | 對話壓縮（compaction）後會掉下來 |
+| 資料來源 | Usage API | 逐字稿裡最後一則回覆的 usage 欄位 |
+
+Context 佔用＝最後一則回覆的 `input_tokens + cache_read_input_tokens + cache_creation_input_tokens`。
+分母從逐字稿裡的 model id 判斷（帶 `[1m]` 就是 1,000,000，否則 200,000）；
+**判斷不出來時只顯示 token 數、百分比留白**，不會猜一個分母湊數。
 
 ## 安全性
 
