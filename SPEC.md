@@ -230,3 +230,49 @@ collector 輸出 `~/.cache/claude-usage-widget/state.json`，schema：
 5. desklet 加到桌面後不當機，數字與 `claude.ai → Settings → Usage` 一致。
 6. `grep -rE "sk-|accessToken|Bearer [A-Za-z0-9]" --include=*.py --include=*.js --include=*.json .`
    在 repo 內查無憑證值。
+
+---
+
+## 10. D 區塊：單一 session 的 context 佔用（2026-09-13 追加）
+
+回答「我現在這個對話用掉多少 context」，與 A 區塊的**額度百分比意義完全不同**：
+額度是計費窗口的消耗，context 是這一輪送進模型的對話長度，會因 compaction 下降。
+**兩者不可互相換算、不可共用欄位。**
+
+### 11.1 資料來源（2026-09-13 實測，Observation 層）
+
+同樣讀 `~/.claude/projects/**/*.jsonl`，但**不走增量掃描那條路**——
+增量掃描累加全部歷史，這裡要的是「最後一則的當下值」。
+
+- **分子**：最後一則 `type=="assistant"` 且 `isSidechain != true` 的
+  `message.usage` 之 `input_tokens + cache_read_input_tokens + cache_creation_input_tokens`。
+  **`output_tokens` 不算**（下一輪才進 context）。
+- **分母**：最後一則 `type=="attachment"` 且 `attachment.type=="model"` 的
+  `attachment.identity.modelId`。含 `[1m]` → 1,000,000，否則 → 200,000。
+- 🔴 **查不到 modelId 時 `context_window` 與 `percent` 一律 `null`，不得預設 200,000。**
+  實測預設 20 萬會讓 1M 的 session 算出 116.5% 這種鬼數字，比留白更糟。
+
+### 11.2 顯示規則（Frank 2026-09-13 拍板：方案 B）
+
+顯示**最近 5 分鐘內有活動**的 session，依活動時間由新到舊，**最多 3 條**。
+理由：本機常態就是多開，只顯示一條會在多個 session 之間跳來跳去。
+
+### 11.3 效能（實測，不是估計）
+
+按檔案 mtime 篩掉窗口外的檔，**只讀留下來那幾個檔的頭尾各數百 KB**。
+2026-09-13 實測：115 個逐字稿檔中選出 4 個計算，**耗時 0.017 秒**。
+🔴 **窗口外的檔不得被開啟**（SPEC §3），由測試 `test_窗口外的檔案不得被開啟` 守著。
+
+### 11.4 state.json 欄位（§4.1 schema 的追加）
+
+```json
+"sessions": [
+  { "project": "quantum", "tokens": 229567, "context_window": 1000000,
+    "percent": 23.0, "model": "claude-opus-5[1m]",
+    "last_active_at": "2026-09-13T01:00:00+08:00" }
+]
+```
+
+`ok:false` 時仍須存在（空陣列）。完整契約見 `tests/test_session_context.py`。
+
+---

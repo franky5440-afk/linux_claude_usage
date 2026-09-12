@@ -14,3 +14,6 @@ LESSONS.md
 
 # 公開前才要跑的一次性腳本，不需要進 repo
 squash-history.sh
+
+# builder 工作包，不進 repo
+WORKPACKAGE.md

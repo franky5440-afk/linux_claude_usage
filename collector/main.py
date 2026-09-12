@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 # 允許直接執行 python collector/main.py
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from collector import usage_api, transcript_scan, pricing, history
+from collector import usage_api, transcript_scan, pricing, history, session_context
 
 STATE_DIR = Path.home() / ".cache" / "claude-usage-widget"
 STATE_FILE = STATE_DIR / "state.json"
@@ -38,6 +38,7 @@ def _default_state() -> Dict[str, Any]:
             "by_model": [],
         },
         "projects": [],
+        "sessions": [],
         "totals": {
             "today_tokens": 0,
             "today_by_model": {},
@@ -46,7 +47,8 @@ def _default_state() -> Dict[str, Any]:
 
 
 def build_state(api_result: Optional[Dict[str, Any]], api_error: Optional[str],
-                scan_result: Optional[Dict[str, Any]], scan_error: Optional[str]) -> Dict[str, Any]:
+                scan_result: Optional[Dict[str, Any]], scan_error: Optional[str],
+                sessions: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     """產生符合 SPEC §4.1 的 state dict。
 
     ⚠️ 任何一邊失敗，其餘欄位仍須存在（可為空陣列 / null），
@@ -123,6 +125,9 @@ def build_state(api_result: Optional[Dict[str, Any]], api_error: Optional[str],
     # 如果兩邊都成功，ok = True
     if not api_error and not scan_error:
         state["ok"] = True
+
+    # D 區塊：collector 算好就好，desklet 只負責畫；缺資料就給空陣列
+    state["sessions"] = list(sessions) if sessions is not None else []
 
     state["errors"] = errors
     state["generated_at"] = _now_iso()
@@ -255,8 +260,20 @@ def main() -> int:
     except Exception as e:
         scan_error = f"逐字稿掃描失敗: {e}"
 
+    # D 區塊：單一 session 的 context 佔用（SPEC §10）。附加產物，
+    # 失敗只記進 errors，不讓整支掛掉（SPEC §4.2）。
+    sessions: List[Dict[str, Any]] = []
+    session_error: Optional[str] = None
+    try:
+        sessions = session_context.active_sessions(projects_dir)
+    except Exception as e:
+        session_error = f"活動 session 掃描失敗：{e}"
+
     # 組裝 state
-    state = build_state(api_result, api_error, scan_result, scan_error)
+    state = build_state(api_result, api_error, scan_result, scan_error,
+                        sessions=sessions)
+    if session_error is not None:
+        state["errors"].append(session_error)
 
     # 歷史週報：帳本不存在就先全量補建一次，之後每次更新報表。
     # 週報是附加產物，失敗只記進 errors，不影響 state 主體與結束碼。
